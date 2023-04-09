@@ -1,1 +1,0 @@
-/Users/zakfarmer/Workspace/3SC/chess-websocket-experiment/persistence-service/target/debug/cubechess-persistence-service: /Users/zakfarmer/Workspace/3SC/chess-websocket-experiment/persistence-service/src/main.rs
