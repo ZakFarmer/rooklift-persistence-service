@@ -36,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 async fn handle_message(message: String, pool: &sqlx::mysql::MySqlPool) {
     let message_obj: Message = serde_json::from_str::<Message>(&message).unwrap();
 
-    let rows_affected = sqlx::query!(
+    let _rows_affected = sqlx::query!(
         r#"
     UPDATE games
     SET fen = ?
