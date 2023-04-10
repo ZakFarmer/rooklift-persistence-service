@@ -37,28 +37,37 @@ async fn handle_message(message: String, pool: &sqlx::mysql::MySqlPool) {
     let message_obj: Message = serde_json::from_str::<Message>(&message).unwrap();
 
     let rows_affected = sqlx::query!(
-            r#"
+        r#"
     UPDATE games
     SET fen = ?
     WHERE id = ?
             "#,
         message_obj.payload.fen,
-        message_obj.payload.game_id.to_string())
-        .execute(pool)
-        .await
-        .expect("Could not update game")
-        .rows_affected();
+        message_obj.payload.game_id.to_string()
+    )
+    .execute(pool)
+    .await
+    .expect("Could not update game")
+    .rows_affected();
 }
 
 async fn subscribe(channel: String) -> Result<(), Box<dyn std::error::Error>> {
     let redis_host: String = std::env::var("REDIS_HOST").unwrap_or(String::from("127.0.0.1"));
-    let redis_con = client::pubsub_connect(redis_host, 6379).await.expect("Could not connect to Redis");
-
-    let sql_pool = MySqlPool::connect(&std::env::var("DATABASE_URL").unwrap_or(String::from("mysql://sail:password@localhost/backend")))
+    let redis_con = client::pubsub_connect(redis_host, 6379)
         .await
-        .unwrap();
+        .expect("Could not connect to Redis");
 
-    let mut msg_stream = redis_con.psubscribe(&channel).await.expect("Could not subscribe to games topic");
+    let sql_pool = MySqlPool::connect(
+        &std::env::var("DATABASE_URL")
+            .unwrap_or(String::from("mysql://sail:password@localhost/backend")),
+    )
+    .await
+    .unwrap();
+
+    let mut msg_stream = redis_con
+        .psubscribe(&channel)
+        .await
+        .expect("Could not subscribe to games topic");
 
     while let Some(msg) = msg_stream.next().await {
         match msg {
